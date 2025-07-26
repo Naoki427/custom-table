@@ -12,7 +12,7 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-sou-hyou}
     volumes:
       - mongo_data:/data/db
-      - ./docker/mongo-init:/docker-entrypoint-initdb.d
+      - ./scripts/mongo-init:/docker-entrypoint-initdb.d
     networks:
       - sou-hyou-network
 
