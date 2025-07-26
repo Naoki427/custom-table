@@ -1,0 +1,48 @@
+services:
+  # MongoDB database
+  mongo:
+    image: mongo:7.0
+    container_name: sou-hyou-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-sou-hyou}
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - sou-hyou-network
+
+  # Apollo GraphQL server
+  server:
+    build:
+      context: .
+      dockerfile: packages/server/Dockerfile
+      target: development
+    container_name: sou-hyou-server
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongo:27017/${MONGO_DATABASE:-sou-hyou}?authSource=admin
+      - PORT=4000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/server/node_modules
+    depends_on:
+      - mongo
+    networks:
+      - sou-hyou-network
+    command: pnpm --filter=server dev
+
+volumes:
+  mongo_data:
+
+networks:
+  sou-hyou-network:
+    driver: bridge

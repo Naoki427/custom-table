@@ -1,0 +1,58 @@
+.env
+.env.local
+.env.production
+
+# dependencies
+node_modules/
+.pnpm/
+.pnpm-store/
+
+# production
+/dist
+/build
+.next
+out/
+
+# testing
+coverage/
+*.log
+.nyc_output/
+
+# misc
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# OS
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
+
+# turborepo
+turbo/
+
+# firebase
+.firebase/
+.firebaserc
+
+# docker
+docker-compose.override.yml
+*.local.yml
+
+# husky
+.husky/_/
+
+# lint-staged
+*.lintstagedrc*
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+#claude
+CLAUDE.md
