@@ -5,7 +5,9 @@
   "main": "index.js",
   "packageManager": "pnpm@8.15.4",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:web": "pnpm --filter=web test",
+    "test:server": "pnpm --filter=server test",
     "dev": "pnpm --filter=web dev",
     "build": "pnpm --filter=web build",
     "dev:web": "pnpm --filter=web dev",
@@ -27,6 +29,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

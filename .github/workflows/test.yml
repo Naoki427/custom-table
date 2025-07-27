@@ -1,0 +1,53 @@
+name: Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_DATABASE: sou-hyou
+        options: >-
+          --health-cmd="mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Start services with Docker Compose
+        run: docker-compose up -d
+
+      - name: Wait for services
+        run: |
+          echo "Waiting for services to be ready..."
+          sleep 10  # 必要に応じて調整
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose down -v
