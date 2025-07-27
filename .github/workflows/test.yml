@@ -37,17 +37,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Start services with Docker Compose
-        run: docker compose up -d
-
-      - name: Wait for services
-        run: |
-          echo "Waiting for services to be ready..."
-          sleep 10  # 必要に応じて調整
-
       - name: Run tests
         run: pnpm test
 
-      - name: Stop containers
-        if: always()
-        run: docker compose down -v
