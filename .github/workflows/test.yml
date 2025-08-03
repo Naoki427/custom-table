@@ -37,6 +37,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # Apollo Server 起動
+      - name: Start Apollo Server
+        run: pnpm --filter=server dev &
+        working-directory: packages/server
+
+      # Next.js 起動
+      - name: Start Next.js
+        run: pnpm --filter=web dev &
+        working-directory: apps/web
+
+      # 両サーバーの起動を待つ
+      - name: Wait for Apollo Server
+        run: npx wait-on http://localhost:4000/graphql
+
+      - name: Wait for Next.js
+        run: npx wait-on http://localhost:3000
+
+      # テスト実行
       - name: Run tests
         run: pnpm test
-
