@@ -49,10 +49,10 @@ jobs:
 
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
-        run: npx wait-on http://localhost:4000/graphql
+        run: pnpm wait-on http://localhost:4000/graphql
 
       - name: Wait for Next.js
-        run: npx wait-on http://localhost:3000
+        run: pnpm wait-on http://localhost:3000
 
       # テスト実行
       - name: Run tests
