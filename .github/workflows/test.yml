@@ -54,13 +54,14 @@ jobs:
 
       # Apollo Server 起動 (test environment)
       - name: Start Apollo Server
+        working-directory: packages/server
         run: |
           echo "Starting Apollo Server on port 4001..."
-          cd packages/server && pnpm dev > ../../apollo-server.log 2>&1 &
-          echo $! > apollo-server.pid
+          PORT=4001 pnpm dev > $GITHUB_WORKSPACE/apollo-server.log 2>&1 &
+          echo $! > $GITHUB_WORKSPACE/apollo-server.pid
           sleep 3
           echo "Apollo Server logs:"
-          cat apollo-server.log
+          cat $GITHUB_WORKSPACE/apollo-server.log
         env:
           NODE_ENV: test
           PORT: 4001
@@ -69,13 +70,14 @@ jobs:
 
       # Next.js 起動 (test environment)
       - name: Start Next.js
+        working-directory: apps/web
         run: |
           echo "Starting Next.js on port 3001..."
-          cd apps/web && PORT=3001 pnpm dev > ../../nextjs-server.log 2>&1 &
-          echo $! > nextjs-server.pid
+          PORT=3001 pnpm dev > $GITHUB_WORKSPACE/nextjs-server.log 2>&1 &
+          echo $! > $GITHUB_WORKSPACE/nextjs-server.pid
           sleep 3
           echo "Next.js Server logs:"
-          cat nextjs-server.log
+          cat $GITHUB_WORKSPACE/nextjs-server.log
         env:
           NODE_ENV: test
           NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
@@ -98,10 +100,10 @@ jobs:
         if: always()
         run: |
           echo "=== Final Apollo Server logs ==="
-          [ -f apollo-server.log ] && cat apollo-server.log || echo "No Apollo Server log found"
+          [ -f $GITHUB_WORKSPACE/apollo-server.log ] && cat $GITHUB_WORKSPACE/apollo-server.log || echo "No Apollo Server log found"
           echo "=== Final Next.js logs ==="
-          [ -f nextjs-server.log ] && cat nextjs-server.log || echo "No Next.js log found"
+          [ -f $GITHUB_WORKSPACE/nextjs-server.log ] && cat $GITHUB_WORKSPACE/nextjs-server.log || echo "No Next.js log found"
           
           echo "Stopping servers..."
-          [ -f apollo-server.pid ] && kill $(cat apollo-server.pid) 2>/dev/null || true
-          [ -f nextjs-server.pid ] && kill $(cat nextjs-server.pid) 2>/dev/null || true
+          [ -f $GITHUB_WORKSPACE/apollo-server.pid ] && kill $(cat $GITHUB_WORKSPACE/apollo-server.pid) 2>/dev/null || true
+          [ -f $GITHUB_WORKSPACE/nextjs-server.pid ] && kill $(cat $GITHUB_WORKSPACE/nextjs-server.pid) 2>/dev/null || true
