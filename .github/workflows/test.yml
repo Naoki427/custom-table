@@ -37,6 +37,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # Debug workspace information
+      - name: Debug workspace
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "Workspace info:"
+          pnpm list --depth=0
+          echo "Filter test:"
+          pnpm --filter=web --dry-run dev || echo "Filter failed"
+
       # Copy test environment file
       - name: Setup test environment
         run: cp .env.test .env.local
