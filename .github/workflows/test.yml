@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          path: sou-hyou
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -33,24 +35,27 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
+          cache-dependency-path: sou-hyou/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install
+        working-directory: sou-hyou
 
       # Copy test environment file
       - name: Setup test environment
         run: cp .env.test .env.local
+        working-directory: sou-hyou
 
       # Apollo Server 起動 (test environment)
       - name: Start Apollo Server
         run: |
           echo "Starting Apollo Server on port 4001..."
-          cd packages/server
-          pnpm dev > apollo-server.log 2>&1 &
+          pnpm --filter=server dev > apollo-server.log 2>&1 &
           echo $! > apollo-server.pid
           sleep 3
           echo "Apollo Server logs:"
           cat apollo-server.log
+        working-directory: sou-hyou
         env:
           NODE_ENV: test
           PORT: 4001
@@ -61,12 +66,12 @@ jobs:
       - name: Start Next.js
         run: |
           echo "Starting Next.js on port 3001..."
-          cd apps/web
-          PORT=3001 pnpm dev > nextjs-server.log 2>&1 &
+          PORT=3001 pnpm --filter=web dev > nextjs-server.log 2>&1 &
           echo $! > nextjs-server.pid
           sleep 3
           echo "Next.js Server logs:"
           cat nextjs-server.log
+        working-directory: sou-hyou
         env:
           NODE_ENV: test
           NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
@@ -74,25 +79,29 @@ jobs:
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
         run: pnpm exec wait-on tcp:4001
+        working-directory: sou-hyou
 
       - name: Wait for Next.js
         run: pnpm exec wait-on tcp:3001
+        working-directory: sou-hyou
 
       # テスト実行
       - name: Run tests
         run: pnpm test
+        working-directory: sou-hyou
         env:
           GRAPHQL_TEST_ENDPOINT: http://localhost:4001/graphql
 
       # サーバー停止とログ出力
       - name: Stop servers and show final logs
         if: always()
+        working-directory: sou-hyou
         run: |
           echo "=== Final Apollo Server logs ==="
-          [ -f packages/server/apollo-server.log ] && cat packages/server/apollo-server.log || echo "No Apollo Server log found"
+          [ -f apollo-server.log ] && cat apollo-server.log || echo "No Apollo Server log found"
           echo "=== Final Next.js logs ==="
-          [ -f apps/web/nextjs-server.log ] && cat apps/web/nextjs-server.log || echo "No Next.js log found"
+          [ -f nextjs-server.log ] && cat nextjs-server.log || echo "No Next.js log found"
           
           echo "Stopping servers..."
-          [ -f packages/server/apollo-server.pid ] && kill $(cat packages/server/apollo-server.pid) 2>/dev/null || true
-          [ -f apps/web/nextjs-server.pid ] && kill $(cat apps/web/nextjs-server.pid) 2>/dev/null || true
+          [ -f apollo-server.pid ] && kill $(cat apollo-server.pid) 2>/dev/null || true
+          [ -f nextjs-server.pid ] && kill $(cat nextjs-server.pid) 2>/dev/null || true
