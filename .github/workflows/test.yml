@@ -37,22 +37,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # Apollo Server 起動
+      # Copy test environment file
+      - name: Setup test environment
+        run: cp .env.test .env.local
+
+      # Apollo Server 起動 (test environment)
       - name: Start Apollo Server
         run: pnpm --filter=server dev &
         working-directory: packages/server
+        env:
+          NODE_ENV: test
 
-      # Next.js 起動
+      # Next.js 起動 (test environment)
       - name: Start Next.js
-        run: pnpm --filter=web dev &
+        run: PORT=3001 pnpm --filter=web dev &
         working-directory: apps/web
+        env:
+          NODE_ENV: test
 
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
-        run: pnpm wait-on http://localhost:4000/graphql
+        run: pnpm wait-on http://localhost:4001/graphql
 
       - name: Wait for Next.js
-        run: pnpm wait-on http://localhost:3000
+        run: pnpm wait-on http://localhost:3001
 
       # テスト実行
       - name: Run tests
