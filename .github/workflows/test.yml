@@ -56,7 +56,7 @@ jobs:
       - name: Start Apollo Server
         run: |
           echo "Starting Apollo Server on port 4001..."
-          pnpm --filter=server dev > apollo-server.log 2>&1 &
+          cd packages/server && pnpm dev > ../../apollo-server.log 2>&1 &
           echo $! > apollo-server.pid
           sleep 3
           echo "Apollo Server logs:"
@@ -71,7 +71,7 @@ jobs:
       - name: Start Next.js
         run: |
           echo "Starting Next.js on port 3001..."
-          PORT=3001 pnpm --filter=web dev > nextjs-server.log 2>&1 &
+          cd apps/web && PORT=3001 pnpm dev > ../../nextjs-server.log 2>&1 &
           echo $! > nextjs-server.pid
           sleep 3
           echo "Next.js Server logs:"
