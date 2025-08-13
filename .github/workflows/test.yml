@@ -43,7 +43,13 @@ jobs:
 
       # Apollo Server 起動 (test environment)
       - name: Start Apollo Server
-        run: pnpm --filter=server dev &
+        run: |
+          echo "Starting Apollo Server on port 4001..."
+          pnpm --filter=server dev > apollo-server.log 2>&1 &
+          echo $! > apollo-server.pid
+          sleep 3
+          echo "Apollo Server logs:"
+          cat apollo-server.log
         working-directory: packages/server
         env:
           NODE_ENV: test
@@ -52,19 +58,18 @@ jobs:
           CORS_ORIGIN: http://localhost:3001
 
       # Next.js 起動 (test environment)
-      - name: Start Next.js (with log)
-        run: PORT=3001 pnpm --filter=web dev > /tmp/next.log 2>&1 &
+      - name: Start Next.js
+        run: |
+          echo "Starting Next.js on port 3001..."
+          PORT=3001 pnpm --filter=web dev > nextjs-server.log 2>&1 &
+          echo $! > nextjs-server.pid
+          sleep 3
+          echo "Next.js Server logs:"
+          cat nextjs-server.log
         working-directory: apps/web
         env:
           NODE_ENV: test
           NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
-
-      # 失敗時にログを出すためのフック（ジョブの最後に）
-      - name: Print Next.js log on failure
-        if: failure()
-        run: |
-          echo "===== Next.js log ====="
-          tail -n 200 /tmp/next.log || true
 
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
@@ -78,3 +83,16 @@ jobs:
         run: pnpm test
         env:
           GRAPHQL_TEST_ENDPOINT: http://localhost:4001/graphql
+
+      # サーバー停止とログ出力
+      - name: Stop servers and show final logs
+        if: always()
+        run: |
+          echo "=== Final Apollo Server logs ==="
+          [ -f packages/server/apollo-server.log ] && cat packages/server/apollo-server.log || echo "No Apollo Server log found"
+          echo "=== Final Next.js logs ==="
+          [ -f apps/web/nextjs-server.log ] && cat apps/web/nextjs-server.log || echo "No Next.js log found"
+          
+          echo "Stopping servers..."
+          [ -f packages/server/apollo-server.pid ] && kill $(cat packages/server/apollo-server.pid) 2>/dev/null || true
+          [ -f apps/web/nextjs-server.pid ] && kill $(cat apps/web/nextjs-server.pid) 2>/dev/null || true
