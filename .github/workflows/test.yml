@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: sou-hyou
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -35,16 +33,13 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-          cache-dependency-path: sou-hyou/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: sou-hyou
 
       # Copy test environment file
       - name: Setup test environment
         run: cp .env.test .env.local
-        working-directory: sou-hyou
 
       # Apollo Server 起動 (test environment)
       - name: Start Apollo Server
@@ -55,7 +50,6 @@ jobs:
           sleep 3
           echo "Apollo Server logs:"
           cat apollo-server.log
-        working-directory: sou-hyou
         env:
           NODE_ENV: test
           PORT: 4001
@@ -71,7 +65,6 @@ jobs:
           sleep 3
           echo "Next.js Server logs:"
           cat nextjs-server.log
-        working-directory: sou-hyou
         env:
           NODE_ENV: test
           NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
@@ -79,23 +72,19 @@ jobs:
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
         run: pnpm exec wait-on tcp:4001
-        working-directory: sou-hyou
 
       - name: Wait for Next.js
         run: pnpm exec wait-on tcp:3001
-        working-directory: sou-hyou
 
       # テスト実行
       - name: Run tests
         run: pnpm test
-        working-directory: sou-hyou
         env:
           GRAPHQL_TEST_ENDPOINT: http://localhost:4001/graphql
 
       # サーバー停止とログ出力
       - name: Stop servers and show final logs
         if: always()
-        working-directory: sou-hyou
         run: |
           echo "=== Final Apollo Server logs ==="
           [ -f apollo-server.log ] && cat apollo-server.log || echo "No Apollo Server log found"
