@@ -53,11 +53,10 @@ jobs:
 
       # Next.js 起動 (test environment)
       - name: Start Next.js
-        run: pnpm --filter=web dev &
+        run: pnpm --filter=web dev --port 3001 &
         working-directory: apps/web
         env:
           NODE_ENV: test
-          PORT: 3001
           NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
 
       # 両サーバーの起動を待つ
