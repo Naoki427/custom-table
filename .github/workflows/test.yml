@@ -47,13 +47,18 @@ jobs:
         working-directory: packages/server
         env:
           NODE_ENV: test
+          PORT: 4001
+          MONGODB_URI: mongodb://admin:password@localhost:27017/sou-hyou-test?authSource=admin
+          CORS_ORIGIN: http://localhost:3001
 
       # Next.js 起動 (test environment)
       - name: Start Next.js
-        run: PORT=3001 pnpm --filter=web dev &
+        run: pnpm --filter=web dev &
         working-directory: apps/web
         env:
           NODE_ENV: test
+          PORT: 3001
+          NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
 
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
@@ -65,3 +70,5 @@ jobs:
       # テスト実行
       - name: Run tests
         run: pnpm test
+        env:
+          GRAPHQL_TEST_ENDPOINT: http://localhost:4001/graphql

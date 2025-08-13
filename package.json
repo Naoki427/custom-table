@@ -6,6 +6,8 @@
   "packageManager": "pnpm@8.15.4",
   "scripts": {
     "test": "vitest run",
+    "test:dev": "vitest run",
+    "test:ci": "GRAPHQL_TEST_ENDPOINT=http://localhost:4001/graphql vitest run",
     "test:web": "pnpm --filter=web test",
     "test:server": "pnpm --filter=server test",
     "dev": "pnpm --filter=web dev",
