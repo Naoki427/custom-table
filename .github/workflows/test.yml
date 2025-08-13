@@ -42,6 +42,16 @@ jobs:
         run: cp .env.test .env.local
 
       # Apollo Server 起動 (test environment)
+      - name: Start Apollo Server
+        run: pnpm --filter=server dev &
+        working-directory: packages/server
+        env:
+          NODE_ENV: test
+          PORT: 4001
+          MONGODB_URI: mongodb://admin:password@localhost:27017/sou-hyou-test?authSource=admin
+          CORS_ORIGIN: http://localhost:3001
+
+      # Next.js 起動 (test environment)
       - name: Start Next.js (with log)
         run: PORT=3001 pnpm --filter=web dev > /tmp/next.log 2>&1 &
         working-directory: apps/web
@@ -55,14 +65,6 @@ jobs:
         run: |
           echo "===== Next.js log ====="
           tail -n 200 /tmp/next.log || true
-
-      # Next.js 起動 (test environment)
-      - name: Start Next.js
-        run: pnpm --filter=web dev --port 3001 &
-        working-directory: apps/web
-        env:
-          NODE_ENV: test
-          NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4001/graphql
 
       # 両サーバーの起動を待つ
       - name: Wait for Apollo Server
